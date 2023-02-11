@@ -22,7 +22,7 @@ export const ROOT_PATH = path.resolve(process.cwd());
 const Config: any = _.assign({}, process.env);
 Config.NODE_ENV ||= 'production'
 Config.WECHAT_CHECK_SIGNATURE = bool(Config.WECHAT_CHECK_SIGNATURE)
-Config.MOCK_API = bool(Config.CMOCK_API)
+Config.MOCK_API = bool(Config.MOCK_API)
 
 
 export default Config;

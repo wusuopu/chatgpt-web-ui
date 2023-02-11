@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>chatGPT体验</title>
+  <script src="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+</head>
+<style>
+  body {
+    min-height: 100vh;
+    background-color: rgba(32,33,35,1);
+    color: white;
+    padding: 0;
+    margin: 0;
+  }
+  #chat-list {
+    list-style-type: none;
+    padding: 0 0 80px;
+    margin: 0;
+  }
+  #chat-list li {
+    padding: 15px;
+  }
+  #chat-list li.question {
+    background: rgb(68 70 84 / 1);
+  }
+  #chat-list li.answer {
+    background: rgba(52,53,65,1);
+  }
+  #chat-list li .item {
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+  #chat-list li.answer.error .item {
+    color: red;
+  }
+  #button-area {
+    display: flex;
+    position: fixed;
+    bottom: 30px;
+    max-width: 400px;
+    width: 100%;
+    transform: translateX(-50%);
+    left: 50%;
+    gap: 10px;
+  }
+  #content {
+    height: 40px;
+    max-height: 200px;
+    border-radius: 0.375rem;
+    flex: 1;
+  }
+  #send {
+    color: white;
+    background: green;
+  }
+</style>
+<body>
+  <div id="app">
+    <ul id="chat-list">
+    </ul>
+
+    <div id="button-area">
+      <textarea id="content"></textarea>
+      <button id="send">发送</button>
+      <button id="reset">新的对话</button>
+    </div>
+  </div>
+
+<script>
+  $(function () {
+    let session = {
+      conversationId: undefined,
+      id: undefined,
+    };
+    function appendQuestion (text) {
+      let el = $('<li class="question"><div>提问：</div><div class="item"><div></li>');
+      el.children('.item').text(text);
+      el.appendTo('#chat-list');
+    }
+    function appendAnswer (text, success) {
+      let el = $('<li class="answer ' + (success ? 'success' : 'error') + '"><div>回答：</div><div class="item"><div></li>')
+      el.children('.item').text(text);
+      el.appendTo('#chat-list');
+    }
+    function send (text) {
+      appendQuestion(text);
+      const el = $('#send');
+      el.attr('disabled', true);
+
+      $.ajax('/api/v1/chat', {
+        method: 'POST',
+        data: {
+          text: text,
+          options: session,
+        },
+        dataType: 'json',
+        success: function (data) {
+          if (data.success) {
+            appendAnswer(data.data.text, true);
+            session.conversationId = data.data.conversationId;
+            session.id = data.data.id;
+          } else {
+            appendAnswer(data.error, false);
+          }
+        },
+        error: function (xhr) {
+          appendAnswer('处理出错，请稍后再试！', false);
+        },
+        complete: function () {
+          el.attr('disabled', false);
+        },
+      })
+    }
+    $('#send').click(function () {
+      let text = $('#content').val().trim();
+      $('#content').val('');
+      if (!text) { return; }
+      send(text);
+    });
+    $('#reset').click(function () {
+      location.reload();
+    });
+  });
+</script>
+</body>
+</html>

@@ -5,6 +5,7 @@ import expressWinston from 'express-winston';
 import bodyParser from 'body-parser'
 import winston from 'winston';
 import routes from '@/routes';
+import path from "path";
 import { ResponseError } from '@/types/error';
 
 const app = express();
@@ -30,10 +31,11 @@ app.use((err: ResponseError, req: Request, res: Response, next: Errback) => {
   return res.status(err.statusCode || 500).json({errors: [err.message]})
 })
 
+app.set('views', path.join(process.cwd(), 'src/views'))
+app.set('view engine', 'ejs')
+
 app.get('/', (_: Request, res: Response) => {
-  res.send({
-    message: 'hello world',
-  });
+  res.render('index')
 });
 
 export default app;
