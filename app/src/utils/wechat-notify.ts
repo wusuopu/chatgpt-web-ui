@@ -51,7 +51,7 @@ const setToken = async (type: string, token: string) => {
 const getWebApp = (raiseError = false) => {
   if (!config.WECHAT_APP_ID || !config.WECHAT_APP_SECRET) { return }
   if (!webApp) {
-    webApp = new MyWebApi({ appid: config.WEB_APP_ID, appsecret: config.WECHAT_APP_SECRET, })
+    webApp = new MyWebApi({ appid: config.WECHAT_APP_ID, appsecret: config.WECHAT_APP_SECRET, })
     // 多进程之间共享 token
     webApp.setTokenHandler({
       async getToken () {
@@ -70,9 +70,9 @@ const getWebApp = (raiseError = false) => {
 
 export default {
   // 主动发送客服消息
-  async sendMessage (openId: string, data: any) {
+  async sendMessage (openId: string, content: string) {
     const client: MyWebApi = await getWebApp(true)
-    const ret = await client.message.send(openId, 'text', data)
+    const ret = await client.message.send(openId, 'text', { text: { content }})
     if (ret.errcode) {
       logger.error(`发送客服消息出错： ${ret.errcode} ${ret.errmsg}`)
       throw new Error(ret.errmsg)
